@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Jeu du Cercle Parfait 🎯</title>
+<meta name="description" content="Dessine le cercle le plus parfait possible avec ta souris ou ton doigt, et découvre ton score ! Un jeu simple, fun et précis.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  margin: 0;
+  background: #111;
+  color: #eee;
+  font-family: system-ui, Arial, sans-serif;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  gap: 20px;
+}
+#game-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+canvas {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+.controls {
+  margin-top: 10px;
+}
+button {
+  padding: 8px 14px;
+  margin: 0 4px;
+  border: none;
+  border-radius: 6px;
+  background: #27ae60;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+}
+button:hover { background: #2ecc71; }
+#score {
+  font-weight: bold;
+  margin-left: 10px;
+}
+#results {
+  background: #1c1c1c;
+  padding: 15px;
+  border-radius: 8px;
+  width: 220px;
+  height: 420px;
+  overflow-y: auto;
+}
+#results h3 {
+  margin-top: 0;
+  text-align: center;
+}
+.result-entry {
+  background: #222;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div id="game-area">
+  <h1>🎯 Jeu du Cercle Parfait</h1>
+  <canvas id="canvas" width="600" height="400"></canvas>
+  <div class="controls">
+    <button id="clear">Effacer</button>
+    <button id="eval">Évaluer</button>
+    <button id="correction">Correction</button>
+    <button id="save">Sauvegarder</button>
+    <span id="score">Score: —</span>
+  </div>
+  <p>Trace un cercle puis clique sur “Évaluer”.</p>
+</div>
+
+<div id="results">
+  <h3>🏆 Meilleurs Scores</h3>
+  <div id="score-list"></div>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const scoreSpan = document.getElementById("score");
+const scoreList = document.getElementById("score-list");
+
+let drawing = false;
+let points = [];
+let lastScore = null;
+let bestScores = [];
+let lastFit = null;
+
+function clearCanvas() {
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+clearCanvas();
+
+canvas.addEventListener("mousedown", e => {
+  drawing = true;
+  points = [[e.offsetX, e.offsetY]];
+});
+canvas.addEventListener("mousemove", e => {
+  if (!drawing) return;
+  const [x, y] = [e.offsetX, e.offsetY];
+  points.push([x, y]);
+  const n = points.length;
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(points[n - 2][0], points[n - 2][1]);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+});
+canvas.addEventListener("mouseup", () => drawing = false);
+canvas.addEventListener("mouseleave", () => drawing = false);
+
+function fitCircle(pts) {
+  if (pts.length < 3) return null;
+  let Sx=0,Sy=0,Sxx=0,Syy=0,Sxy=0,Sx3=0,Sy3=0,Sx2y2=0;
+  for (const [x,y] of pts){
+    const z = x*x + y*y;
+    Sx+=x; Sy+=y;
+    Sxx+=x*x; Syy+=y*y; Sxy+=x*y;
+    Sx3+=x*z; Sy3+=y*z; Sx2y2+=z;
+  }
+  const n=pts.length;
+  const M=[[Sxx,Sxy,Sx],[Sxy,Syy,Sy],[Sx,Sy,n]];
+  const B=[-Sx3,-Sy3,-Sx2y2];
+  function solve3(A,b){
+    const m=A.map(r=>r.slice()), bb=b.slice();
+    for(let i=0;i<3;i++){
+      let piv=i;
+      for(let j=i;j<3;j++) if(Math.abs(m[j][i])>Math.abs(m[piv][i])) piv=j;
+      if(Math.abs(m[piv][i])<1e-12) return null;
+      [m[i],m[piv]]=[m[piv],m[i]]; [bb[i],bb[piv]]=[bb[piv],bb[i]];
+      const div=m[i][i];
+      for(let j=i;j<3;j++) m[i][j]/=div;
+      bb[i]/=div;
+      for(let r=0;r<3;r++){
+        if(r==i) continue;
+        const f=m[r][i];
+        for(let c=i;c<3;c++) m[r][c]-=f*m[i][c];
+        bb[r]-=f*bb[i];
+      }
+    }
+    return bb;
+  }
+  const sol=solve3(M,B);
+  if(!sol) return null;
+  const [A,Bb,C]=sol;
+  const cx=-A/2, cy=-Bb/2;
+  const r=Math.sqrt(cx*cx+cy*cy-C);
+  return {cx,cy,r};
+}
+
+function estimateCoverage(pts,cx,cy){
+  const ang=pts.map(p=>Math.atan2(p[1]-cy,p[0]-cx)).sort((a,b)=>a-b);
+  let maxgap=0;
+  for(let i=1;i<ang.length;i++) maxgap=Math.max(maxgap,ang[i]-ang[i-1]);
+  const wrap=(ang[0]+2*Math.PI)-ang[ang.length-1];
+  maxgap=Math.max(maxgap,wrap);
+  return 2*Math.PI-maxgap;
+}
+function scoreFit(pts,fit){
+  const {cx,cy,r}=fit;
+  let s2=0;
+  for(const [x,y] of pts){
+    const d=Math.hypot(x-cx,y-cy);
+    s2+=(d-r)**2;
+  }
+  const rmse=Math.sqrt(s2/pts.length);
+  const coverage=estimateCoverage(pts,cx,cy);
+  const precision=Math.max(0,1-(rmse/(r*0.3)));
+  const coverageFactor=Math.min(1,coverage/(Math.PI*1.9));
+  const final=Math.round(100*precision*coverageFactor);
+  return {rmse,r,coverage,final};
+}
+
+document.getElementById("eval").onclick = () => {
+  if(points.length<6){
+    alert("Dessine un cercle avant d'évaluer !");
+    return;
+  }
+  const fit=fitCircle(points);
+  if(!fit){
+    alert("Impossible d'ajuster un cercle !");
+    return;
+  }
+  lastFit = fit;
+  const s=scoreFit(points,fit);
+  lastScore=s.final;
+  clearCanvas();
+  ctx.lineWidth=3;
+  ctx.strokeStyle="#000";
+  ctx.beginPath();
+  ctx.moveTo(points[0][0],points[0][1]);
+  for(const p of points) ctx.lineTo(p[0],p[1]);
+  ctx.stroke();
+  scoreSpan.textContent=`Score: ${s.final}/100`;
+};
+
+document.getElementById("correction").onclick = () => {
+  if(!lastFit){
+    alert("Fais une évaluation d'abord !");
+    return;
+  }
+  const {cx,cy,r}=lastFit;
+  ctx.strokeStyle="red";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,0,2*Math.PI);
+  ctx.stroke();
+  ctx.fillStyle="red";
+  ctx.beginPath();
+  ctx.arc(cx,cy,3,0,2*Math.PI);
+  ctx.fill();
+};
+
+document.getElementById("clear").onclick = () => {
+  clearCanvas();
+  points=[];
+  lastFit=null;
+  scoreSpan.textContent="Score: —";
+};
+
+document.getElementById("save").onclick = () => {
+  if(lastScore==null){
+    alert("Évalue ton dessin avant de sauvegarder !");
+    return;
+  }
+  const date=new Date().toLocaleTimeString();
+  bestScores.push({score:lastScore,time:date});
+  bestScores.sort((a,b)=>b.score-a.score);
+  if(bestScores.length>10) bestScores.length=10;
+  refreshTable();
+};
+
+function refreshTable(){
+  scoreList.innerHTML="";
+  bestScores.forEach((s,i)=>{
+    const div=document.createElement("div");
+    div.className="result-entry";
+    div.textContent=`${i+1}. ${s.score}/100 — ${s.time}`;
+    scoreList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>

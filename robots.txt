@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://Maxime25fr.github.io/cercle-parfait/sitemap.xml
