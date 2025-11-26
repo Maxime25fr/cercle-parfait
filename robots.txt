@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://cercle-parfait.onrender.com/sitemap.xml
