@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cercle Parfait – Jeu en ligne</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ---- Layout général ---- */
+        #sidebar {
+            width: 260px;
+            background: #ffffff;
+            border-left: 2px solid #e3e3e3;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #game-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            background: white;
+            border: 2px solid #222;
+            border-radius: 8px;
+        }
+
+        /* Boutons */
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: #2b7cff;
+            color: white;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d5bcc;
+        }
+
+        #score-box {
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #ad-box {
+            padding: 12px;
+            background: #fff4d1;
+            border: 1px solid #e2c77d;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #smartlink {
+            display: block;
+            background: #ffd369;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            text-decoration: none;
+            color: #000;
+            font-weight: bold;
+        }
+
+        #smartlink:hover {
+            background: #ffbe32;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ZONE DE JEU -->
+    <div id="game-area">
+        <canvas id="canvas" width="500" height="500"></canvas>
+    </div>
+
+    <!-- SIDEBAR : scores + pubs -->
+    <div id="sidebar">
+        <div id="score-box">Score : –</div>
+
+        <button onclick="evaluateCircle()">Évaluer</button>
+        <button onclick="clearCanvas()">Effacer</button>
+
+        <h3>Publicité</h3>
+
+        <!-- Zone script PUBLICITÉ N°1 -->
+        <div id="ad-box">
+            <div>Annonce :</div>
+            <script type='text/javascript'
+             src='//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js'>
+            </script>
+        </div>
+
+        <!-- SMARTLINK -->
+        <a id="smartlink" 
+           href="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47"
+           target="_blank">
+           🔗 Offre sponsorisée (SmartLink)
+        </a>
+    </div>
+
+<script>
+/* -----------------------------------------
+   Système du jeu : Cercle Parfait
+----------------------------------------- */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let drawing = false;
+let points = [];
+
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", stop);
+canvas.addEventListener("mouseleave", stop);
+
+function start(e) {
+    drawing = true;
+    points = [];
+    points.push(getPos(e));
+}
+
+function draw(e) {
+    if (!drawing) return;
+    const pos = getPos(e);
+    points.push(pos);
+
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#000";
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    const last = points[points.length - 2];
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+}
+
+function stop() {
+    drawing = false;
+}
+
+function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    points = [];
+    document.getElementById("score-box").textContent = "Score : –";
+}
+
+function evaluateCircle() {
+    if (points.length < 10) return;
+
+    let sumX = 0, sumY = 0;
+    for (let p of points) {
+        sumX += p.x; sumY += p.y;
+    }
+    const cx = sumX / points.length;
+    const cy = sumY / points.length;
+
+    let distances = points.map(p => Math.hypot(p.x - cx, p.y - cy));
+    let avg = distances.reduce((a, b) => a + b) / distances.length;
+
+    let variance = distances.map(d => Math.abs(d - avg));
+    let score = Math.max(0, 100 - (variance.reduce((a, b) => a + b) / distances.length));
+
+    score = Math.round(score);
+    document.getElementById("score-box").textContent = "Score : " + score + "/100";
+}
+</script>
+
+</body>
+</html>
