@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cercle Parfait - Jeu</title>
+
+<!-- Style général + mode sombre -->
+<style>
+    :root {
+        --bg: #ffffff;
+        --text: #111;
+        --card: #f0f0f0;
+        --accent: #007bff;
+    }
+
+    body.dark {
+        --bg: #0f0f0f;
+        --text: #f0f0f0;
+        --card: #1a1a1a;
+        --accent: #4aa3ff;
+    }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+        transition: 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    header {
+        width: 100%;
+        padding: 15px;
+        text-align: center;
+        background: var(--card);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    h1 { margin: 0; font-size: 24px; }
+
+    .toggle-mode {
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+        background: var(--accent);
+        color: white;
+    }
+
+    #game-container {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    canvas {
+        background: var(--card);
+        border-radius: 10px;
+        touch-action: none;
+    }
+
+    #sidebar {
+        width: 180px;
+        padding: 10px;
+        background: var(--card);
+        border-radius: 10px;
+        height: fit-content;
+    }
+
+    button {
+        background: var(--accent);
+        border: none;
+        padding: 10px;
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .pub-box {
+        width: 100%;
+        padding: 10px;
+        background: var(--card);
+        margin-top: 20px;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    /* Version mobile */
+    @media(max-width: 850px) {
+        #game-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        #sidebar {
+            width: 90%;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Cercle Parfait</h1>
+    <button class="toggle-mode" onclick="toggleMode()">Mode sombre</button>
+</header>
+
+<div id="game-container">
+
+    <canvas id="canvas" width="350" height="350"></canvas>
+
+    <div id="sidebar">
+        <h3>Score</h3>
+        <p id="result">Dessine un cercle !</p>
+        <p><strong>Meilleur score :</strong> <span id="best">0%</span></p>
+
+        <button onclick="clearCanvas()">Effacer</button>
+        <button onclick="evaluateCircle()">Évaluer</button>
+        <button onclick="toggleGuide()">Afficher / cacher le guide</button>
+
+        <div class="pub-box">
+            <p>Publicité</p>
+
+            <!-- PUB N°1 -->
+            <iframe src="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d"
+                    style="width:100%; height:120px; border:none;"></iframe>
+
+            <!-- PUB N°2 -->
+            <iframe src="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47"
+                    style="width:100%; height:120px; border:none; margin-top:10px;"></iframe>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+    let drawing = false;
+    let points = [];
+    let showGuide = false;
+
+    function toggleMode() {
+        document.body.classList.toggle("dark");
+    }
+
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", end);
+
+    canvas.addEventListener("touchstart", (e)=>start(e.touches[0]));
+    canvas.addEventListener("touchmove", (e)=>{ draw(e.touches[0]); e.preventDefault(); });
+    canvas.addEventListener("touchend", end);
+
+    function start(e) {
+        drawing = true;
+        points = [];
+        ctx.beginPath();
+    }
+
+    function draw(e) {
+        if (!drawing) return;
+        let rect = canvas.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+
+        points.push({x, y});
+
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "var(--accent)";
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+
+    function end() { drawing = false; }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (showGuide) drawGuide();
+    }
+
+    function toggleGuide() {
+        showGuide = !showGuide;
+        clearCanvas();
+    }
+
+    function drawGuide() {
+        let cx = canvas.width / 2;
+        let cy = canvas.height / 2;
+        let r = 120;
+
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    function evaluateCircle() {
+        if (points.length < 10) {
+            document.getElementById("result").innerText = "Trace plus long !";
+            return;
+        }
+
+        let cx = canvas.width/2;
+        let cy = canvas.height/2;
+
+        let distances = points.map(p => Math.hypot(p.x - cx, p.y - cy));
+        let avg = distances.reduce((a,b)=>a+b,0) / distances.length;
+
+        let variance = distances.reduce((a,b)=>a + Math.abs(b - avg), 0) / distances.length;
+        let score = Math.max(0, 100 - variance * 1.2); // difficulté renforcée
+        score = score.toFixed(1);
+
+        document.getElementById("result").innerText = "Score : " + score + "%";
+
+        let best = localStorage.getItem("bestScore") || 0;
+        if (score > best) {
+            localStorage.setItem("bestScore", score);
+        }
+        document.getElementById("best").innerText = localStorage.getItem("bestScore") + "%";
+    }
+
+    if (localStorage.getItem("bestScore")) {
+        document.getElementById("best").innerText = localStorage.getItem("bestScore") + "%";
+    }
+</script>
+
+</body>
+</html>
