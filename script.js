@@ -2,119 +2,119 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 let drawing = false;
-let points = [];
-let device = "pc";
+let path = [];
+let showGuide = false;
 
-// Resize canvas correctly
-function resizeCanvas() {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-}
-resizeCanvas();
-window.onresize = resizeCanvas;
-
-// Device choice
-document.querySelectorAll(".device-btn").forEach(btn => {
-    btn.onclick = () => {
-        device = btn.dataset.device;
-        document.getElementById("device-selector").style.display = "none";
-    };
-});
-
-// Fix pointer offset
+// Correctif du décalage
 function getPos(e) {
-    let rect = canvas.getBoundingClientRect();
-    let x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    let y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-    return { x, y };
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: (e.clientX || e.touches?.[0].clientX) - rect.left,
+        y: (e.clientY || e.touches?.[0].clientY) - rect.top
+    };
 }
 
-function start(e) {
-    drawing = true;
-    points = [];
-    let pos = getPos(e);
-    points.push(pos);
+canvas.addEventListener("mousedown", e => { drawing = true; path = []; addPoint(e); });
+canvas.addEventListener("mousemove", e => { if (drawing) addPoint(e); });
+canvas.addEventListener("mouseup", () => drawing = false);
+
+canvas.addEventListener("touchstart", e => { drawing = true; path = []; addPoint(e); });
+canvas.addEventListener("touchmove", e => { if (drawing) addPoint(e); });
+canvas.addEventListener("touchend", () => drawing = false);
+
+function addPoint(e) {
+    const pos = getPos(e);
+    path.push(pos);
+    draw();
 }
 
-function move(e) {
-    if (!drawing) return;
-    let pos = getPos(e);
-    points.push(pos);
-
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#0077ff";
-
-    ctx.beginPath();
-    let p1 = points[points.length - 2];
-    let p2 = points[points.length - 1];
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.stroke();
-}
-
-function end() {
-    drawing = false;
-}
-
-canvas.addEventListener("mousedown", start);
-canvas.addEventListener("mousemove", move);
-canvas.addEventListener("mouseup", end);
-
-canvas.addEventListener("touchstart", start);
-canvas.addEventListener("touchmove", move);
-canvas.addEventListener("touchend", end);
-
-// Show perfect circle
-document.getElementById("show-perfect").onclick = () => {
+function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 3;
 
-    let r = canvas.height * 0.35;
+    if (showGuide) {
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(200, 200, 150, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, r, 0, Math.PI * 2);
+
+    path.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+    });
+
     ctx.stroke();
+}
+
+document.getElementById("reset").onclick = () => {
+    path = [];
+    draw();
 };
 
-// Evaluation improved
+document.getElementById("toggle-guide").onclick = () => {
+    showGuide = !showGuide;
+    draw();
+};
+
+// Évaluation améliorée
 document.getElementById("evaluate").onclick = () => {
-    if (points.length < 20) return;
+    if (path.length < 20) {
+        alert("Dessine un cercle plus complet !");
+        return;
+    }
 
-    let cx = canvas.width / 2;
-    let cy = canvas.height / 2;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
 
-    // Distances au centre
-    let distances = points.map(p => Math.hypot(p.x - cx, p.y - cy));
-    let avg = distances.reduce((a, b) => a + b, 0) / distances.length;
+    let radii = path.map(p => Math.hypot(p.x - cx, p.y - cy));
+    const avg = radii.reduce((a, b) => a + b) / radii.length;
 
-    // Écart-type
-    let variance = distances.reduce((s, d) => s + Math.pow(d - avg, 2), 0) / distances.length;
-    let deviation = Math.sqrt(variance);
+    let deviation = radii.map(r => Math.abs(r - avg));
+    let meanDeviation = deviation.reduce((a, b) => a + b) / deviation.length;
 
-    let score = Math.max(0, 100 - deviation * 2.4); // plus dur mais pas impossible
-    score = score.toFixed(1);
+    // score ajusté (plus réaliste)
+    let score = Math.max(0, 100 - meanDeviation * 1.4);
+    score = Math.round(score);
 
-    document.getElementById("score-display").textContent = `Score : ${score}%`;
+    document.getElementById("score").textContent = score;
+
     saveScore(score);
 };
 
-// Effacer
-document.getElementById("clear").onclick = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-};
-
-// Score table
 function saveScore(score) {
-    let list = document.getElementById("score-table");
-
-    let item = document.createElement("li");
-    item.textContent = score + "%";
-
-    list.prepend(item);
+    let scores = JSON.parse(localStorage.getItem("scores") || "[]");
+    scores.push(score);
+    scores.sort((a,b)=>b-a);
+    scores = scores.slice(0,5);
+    localStorage.setItem("scores", JSON.stringify(scores));
+    showScores();
 }
 
-// Theme toggle
-document.getElementById("toggle-theme").onclick = () => {
+function showScores() {
+    let scores = JSON.parse(localStorage.getItem("scores") || "[]");
+    const list = document.getElementById("score-list");
+    list.innerHTML = "";
+    scores.forEach(s => {
+        const li = document.createElement("li");
+        li.textContent = s + "%";
+        list.appendChild(li);
+    });
+}
+
+showScores();
+
+// MODE SOMBRE
+const btn = document.getElementById("toggle-btn");
+btn.onclick = () => {
     document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+
+    btn.textContent = document.body.classList.contains("dark")
+        ? "☀ Mode clair"
+        : "🌙 Mode sombre";
 };
