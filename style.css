@@ -1,99 +1,109 @@
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    transition: background 0.3s, color 0.3s;
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Mode clair */
 body.light {
-    background: #f5f5f5;
-    color: #111;
+  background-color: #f8f9fa;
+  color: #202124;
 }
 
-/* Mode sombre propre (comme Google) */
 body.dark {
-    background: #181818;
-    color: #eee;
+  background-color: #202124;
+  color: #e8eaed;
 }
 
-#ad {
-    margin: auto;
+.container {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
 }
 
-#theme-toggle {
-    text-align: right;
-    padding: 10px;
+.game-panel {
+  flex: 1;
+  max-width: 700px;
 }
 
-#toggle-btn {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+.controls {
+  margin-bottom: 10px;
 }
 
-#container {
-    display: flex;
-    justify-content: center;
-    padding: 20px;
+button {
+  padding: 10px 16px;
+  margin: 5px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  background-color: #1a73e8;
+  color: white;
+  font-weight: bold;
+  transition: background 0.3s;
 }
 
-#left-panel {
-    text-align: center;
-    margin-right: 20px;
+button:hover {
+  background-color: #1669c1;
 }
 
 canvas {
-    background: #fff;
-    border: 2px solid #ccc;
-    border-radius: 8px;
+  border: 2px solid #202124;
+  background: white;
+  width: 100%;
+  max-width: 700px;
+  height: 500px;
 }
 
 body.dark canvas {
-    background: #222;
-    border-color: #555;
+  background: #3c4043;
+  border-color: #e8eaed;
 }
 
-.buttons button {
-    margin: 10px;
-    padding: 10px 20px;
-    cursor: pointer;
+.score-table {
+  margin-top: 15px;
 }
 
-#score-box {
-    margin-top: 15px;
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-#score-panel {
-    width: 220px;
-    padding: 10px;
-    border-left: 2px solid #ccc;
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  text-align: center;
 }
 
-body.dark #score-panel {
-    border-color: #444;
+body.dark table th, body.dark table td {
+  border-color: #5f6368;
 }
 
-#score-list {
-    list-style: none;
-    padding: 0;
+.sidebar {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-#score-list li {
-    margin: 5px 0;
-    padding: 6px;
-    background: #ddd;
-    border-radius: 4px;
+.ad-vertical {
+  background-color: #fff;
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
 
-body.dark #score-list li {
-    background: #333;
+body.dark .ad-vertical {
+  background-color: #303134;
+  border-color: #5f6368;
 }
 
-/* PUB */
-.ad-top,
-.ad-bottom,
-.ad-right {
-    text-align: center;
-    margin: 10px;
+.ad-banner {
+  width: 100%;
+  text-align: center;
+  margin: 10px 0;
+}
+
+body.dark .ad-banner {
+  background-color: #303134;
 }
