@@ -1,71 +1,66 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cercle Parfait – Jeu</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cercle Parfait</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="light">
 
-    <!-- Bandeau pub haut -->
-    <div class="ad-top">
+<!-- Toggle Sombre / Clair -->
+<div id="theme-toggle">
+    <button id="toggle-btn">🌙 Mode sombre</button>
+</div>
+
+<!-- Bandeau pub haut -->
+<div class="ad-top">
 <script type="text/javascript">
-	atOptions = {
-		'key' : '506bbbc05cbb873bbe918c633ae6ad39',
-		'format' : 'iframe',
-		'height' : 60,
-		'width' : 468,
-		'params' : {}
-	};
+    atOptions = {
+        'key' : '506bbbc05cbb873bbe918c633ae6ad39',
+        'format' : 'iframe',
+        'height' : 60,
+        'width' : 468,
+        'params' : {}
+    };
 </script>
 <script type="text/javascript" src="//www.highperformanceformat.com/506bbbc05cbb873bbe918c633ae6ad39/invoke.js"></script>
-    </div>
+</div>
 
-    <header>
-        <h1>Cercle Parfait</h1>
-        <button id="toggle-theme">Mode sombre</button>
-    </header>
+<div id="container">
+    <div id="left-panel">
+        <h2>Dessine un cercle</h2>
+        <canvas id="canvas" width="400" height="400"></canvas>
 
-    <!-- Choix PC / Mobile -->
-    <div id="device-selector" class="modal">
-        <div class="modal-content">
-            <h2>Vous jouez sur :</h2>
-            <button class="device-btn" data-device="pc">Ordinateur</button>
-            <button class="device-btn" data-device="mobile">Téléphone</button>
+        <div class="buttons">
+            <button id="reset">Réinitialiser</button>
+            <button id="evaluate">Évaluer</button>
+            <button id="toggle-guide">Correction</button>
+        </div>
+
+        <div id="score-box">
+            <h3>Score : <span id="score">—</span>%</h3>
         </div>
     </div>
 
-    <main>
-        <div class="left">
-            <canvas id="canvas"></canvas>
+    <!-- Tableau des scores -->
+    <div id="score-panel">
+        <h3>Meilleurs Scores</h3>
+        <ul id="score-list"></ul>
 
-            <div class="controls">
-                <button id="clear">Effacer</button>
-                <button id="evaluate">Évaluer</button>
-                <button id="show-perfect">Afficher cercle parfait</button>
-            </div>
-
-            <p id="score-display">Score : —</p>
-
-            <!-- Pub bas -->
-            <div class="ad-bottom">
-<script type='text/javascript' src='//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js'></script>
-            </div>
+        <!-- Pub à droite -->
+        <div class="ad-right">
+            <script type="text/javascript" src="//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js"></script>
         </div>
+    </div>
+</div>
 
-        <!-- Tableau scores + pub latérale -->
-        <aside>
-            <h2>Meilleurs Scores</h2>
-            <ul id="score-table"></ul>
+<!-- Pub en bas -->
+<div class="ad-bottom">
+<script async type="text/javascript" src="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d"></script>
+<script async type="text/javascript" src="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47"></script>
+</div>
 
-            <div class="ad-side">
-<script async src="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d"></script>
-<script async src="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47"></script>
-            </div>
-        </aside>
-    </main>
-
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
