@@ -1,116 +1,71 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Cercle Parfait — Jeu</title>
-<meta name="description" content="Jeu du Cercle Parfait : dessine le cercle le plus parfait possible. Mobile & Desktop." />
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cercle Parfait – Jeu</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="light">
 
-<!-- Choix device modal -->
-<div id="deviceModal" class="modal">
-  <div class="modal-card">
-    <h2>Choisir un mode</h2>
-    <p>Sur quel appareil jouez-vous ?</p>
-    <div class="modal-actions">
-      <button id="chooseDesktop" class="primary">Ordinateur (Desktop)</button>
-      <button id="chooseMobile" class="secondary">Téléphone (Mobile)</button>
-    </div>
-    <small>Tu peux changer le thème plus tard (icône en haut à droite).</small>
-  </div>
-</div>
-
-<!-- Top advertisement (iframe script) -->
-<header class="top-ad" id="topAd">
-  <!-- Ad script provided -->
-  <script type="text/javascript">
-    atOptions = {
-      'key' : '506bbbc05cbb873bbe918c633ae6ad39',
-      'format' : 'iframe',
-      'height' : 60,
-      'width' : 468,
-      'params' : {}
-    };
-  </script>
-  <script type="text/javascript" src="//www.highperformanceformat.com/506bbbc05cbb873bbe918c633ae6ad39/invoke.js"></script>
-</header>
-
-<!-- Main layout -->
-<div id="app" class="light">
-
-  <!-- Left: game area -->
-  <main class="game-area">
-    <div class="topbar">
-      <h1>Cercle Parfait</h1>
-      <div class="top-controls">
-        <button id="themeToggle" title="Mode sombre / clair">🌓</button>
-        <button id="resetAll" title="Réinitialiser tout">⟲</button>
-      </div>
+    <!-- Bandeau pub haut -->
+    <div class="ad-top">
+<script type="text/javascript">
+	atOptions = {
+		'key' : '506bbbc05cbb873bbe918c633ae6ad39',
+		'format' : 'iframe',
+		'height' : 60,
+		'width' : 468,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//www.highperformanceformat.com/506bbbc05cbb873bbe918c633ae6ad39/invoke.js"></script>
     </div>
 
-    <div class="canvas-wrap">
-      <canvas id="canvas"></canvas>
-      <!-- small helper -->
-      <div class="hint">Trace un cercle avec la souris ou le doigt → puis Évaluer</div>
-    </div>
+    <header>
+        <h1>Cercle Parfait</h1>
+        <button id="toggle-theme">Mode sombre</button>
+    </header>
 
-    <div class="controls-row">
-      <div class="controls-left">
-        <button id="btnStart">Nouveau</button>
-        <button id="btnEvaluate" class="accent">Évaluer</button>
-        <button id="btnCorrection">Correction</button>
-        <button id="btnSave">Sauvegarder score</button>
-      </div>
-      <div class="controls-right">
-        <div id="scoreBadge" class="score-badge">Score : —</div>
-        <div id="detailBadge" class="detail-badge">Détails</div>
-      </div>
-    </div>
-
-    <!-- Bottom ad area (non intrusive) -->
-    <div class="bottom-ad" id="bottomAd">
-      <!-- Example of linking a smartlink as raw anchor if script not desired -->
-      <a href="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d" target="_blank" rel="noopener noreferrer">Découvrir</a>
-    </div>
-  </main>
-
-  <!-- Right: sidebar (ads + scores) -->
-  <aside class="sidebar">
-    <div class="sidebar-box">
-      <h3>Publicité</h3>
-      <!-- lateral ad script insertion (provided) -->
-      <div id="lateralAd">
-        <!-- Smart script provided -->
-        <script type='text/javascript' src='//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js'></script>
-        <!-- If script does not display anything, fallback to links -->
-        <div class="ad-fallback">
-          <a href="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47" target="_blank" rel="noopener noreferrer">▶ Offre 1</a>
-          <a href="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d" target="_blank" rel="noopener noreferrer">▶ Offre 2</a>
+    <!-- Choix PC / Mobile -->
+    <div id="device-selector" class="modal">
+        <div class="modal-content">
+            <h2>Vous jouez sur :</h2>
+            <button class="device-btn" data-device="pc">Ordinateur</button>
+            <button class="device-btn" data-device="mobile">Téléphone</button>
         </div>
-      </div>
     </div>
 
-    <div class="sidebar-box scores-box">
-      <h3>🏆 Scores</h3>
-      <div id="scoresTable" class="scores-table">
-        <!-- rows inserted by JS -->
-      </div>
-      <div class="scores-actions">
-        <button id="clearScores">Effacer scores</button>
-      </div>
-    </div>
+    <main>
+        <div class="left">
+            <canvas id="canvas"></canvas>
 
-    <div class="sidebar-box help-box">
-      <h3>Infos</h3>
-      <p>Mode : <span id="modeLabel">—</span></p>
-      <p>Couverture réelle et précision sont prises en compte.</p>
-    </div>
-  </aside>
+            <div class="controls">
+                <button id="clear">Effacer</button>
+                <button id="evaluate">Évaluer</button>
+                <button id="show-perfect">Afficher cercle parfait</button>
+            </div>
 
-</div>
+            <p id="score-display">Score : —</p>
 
-<script src="script.js"></script>
+            <!-- Pub bas -->
+            <div class="ad-bottom">
+<script type='text/javascript' src='//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js'></script>
+            </div>
+        </div>
+
+        <!-- Tableau scores + pub latérale -->
+        <aside>
+            <h2>Meilleurs Scores</h2>
+            <ul id="score-table"></ul>
+
+            <div class="ad-side">
+<script async src="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d"></script>
+<script async src="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47"></script>
+            </div>
+        </aside>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
