@@ -2,109 +2,110 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<title>Cercle Parfait – Jeu</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cercle Parfait - Jeu</title>
 
-<!-- Style général + mode sombre -->
 <style>
     :root {
-        --bg: #ffffff;
-        --text: #111;
-        --card: #f0f0f0;
-        --accent: #007bff;
-    }
-
-    body.dark {
         --bg: #0f0f0f;
-        --text: #f0f0f0;
-        --card: #1a1a1a;
-        --accent: #4aa3ff;
+        --card: #1b1b1b;
+        --text: #f1f1f1;
+        --accent: #4ec9b0;
     }
 
     body {
         margin: 0;
+        font-family: Arial, sans-serif;
         background: var(--bg);
         color: var(--text);
-        font-family: Arial, sans-serif;
-        transition: 0.3s;
+    }
+
+    /* Écran de sélection */
+    #device-screen {
+        height: 100vh;
         display: flex;
         flex-direction: column;
+        justify-content: center;
         align-items: center;
-    }
-
-    header {
-        width: 100%;
-        padding: 15px;
-        text-align: center;
-        background: var(--card);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    h1 { margin: 0; font-size: 24px; }
-
-    .toggle-mode {
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        border: none;
-        background: var(--accent);
-        color: white;
-    }
-
-    #game-container {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: row;
         gap: 20px;
     }
 
-    canvas {
+    .choice-btn {
+        padding: 15px 25px;
+        font-size: 20px;
         background: var(--card);
+        border: 2px solid var(--accent);
         border-radius: 10px;
-        touch-action: none;
+        color: var(--text);
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .choice-btn:hover {
+        background: var(--accent);
+        color: black;
+    }
+
+    /* Layout général */
+    #game-container {
+        display: none;
+        height: 100vh;
     }
 
     #sidebar {
-        width: 180px;
-        padding: 10px;
+        width: 260px;
         background: var(--card);
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    #game-area {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+    }
+
+    canvas {
+        background: white;
         border-radius: 10px;
-        height: fit-content;
+        box-shadow: 0 0 10px #000;
     }
 
     button {
+        margin-top: 10px;
+        padding: 10px;
+        width: 100%;
         background: var(--accent);
         border: none;
-        padding: 10px;
-        width: 100%;
-        margin-top: 10px;
+        color: black;
         border-radius: 8px;
-        color: white;
         cursor: pointer;
-        font-size: 15px;
+        font-weight: bold;
+        transition: 0.2s;
     }
 
-    .pub-box {
-        width: 100%;
-        padding: 10px;
-        background: var(--card);
+    button:hover {
+        opacity: 0.8;
+    }
+
+    .ad-block {
         margin-top: 20px;
+        padding: 10px;
+        background: #111;
         border-radius: 10px;
         text-align: center;
-        font-size: 14px;
     }
 
-    /* Version mobile */
-    @media(max-width: 850px) {
+    @media (max-width: 850px) {
+        #sidebar {
+            width: 100%;
+        }
         #game-container {
             flex-direction: column;
-            align-items: center;
-        }
-        #sidebar {
-            width: 90%;
         }
     }
 </style>
@@ -112,135 +113,140 @@
 
 <body>
 
-<header>
+<!-- Écran de choix de l'appareil -->
+<div id="device-screen">
     <h1>Cercle Parfait</h1>
-    <button class="toggle-mode" onclick="toggleMode()">Mode sombre</button>
-</header>
+    <p>Choisissez votre appareil :</p>
+    <button class="choice-btn" onclick="startGame('pc')">💻 Ordinateur</button>
+    <button class="choice-btn" onclick="startGame('mobile')">📱 Téléphone</button>
+</div>
 
+<!-- Interface complète -->
 <div id="game-container">
 
-    <canvas id="canvas" width="350" height="350"></canvas>
-
     <div id="sidebar">
-        <h3>Score</h3>
-        <p id="result">Dessine un cercle !</p>
-        <p><strong>Meilleur score :</strong> <span id="best">0%</span></p>
 
-        <button onclick="clearCanvas()">Effacer</button>
+        <h2>Menu</h2>
+        <button onclick="resetCanvas()">Réinitialiser</button>
         <button onclick="evaluateCircle()">Évaluer</button>
-        <button onclick="toggleGuide()">Afficher / cacher le guide</button>
+        <button onclick="toggleGuide()">Afficher/masquer le cercle rouge</button>
 
-        <div class="pub-box">
-            <p>Publicité</p>
+        <h3>Meilleur score :</h3>
+        <div id="best-score">Aucun pour l’instant</div>
 
-            <!-- PUB N°1 -->
-            <iframe src="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d"
-                    style="width:100%; height:120px; border:none;"></iframe>
-
-            <!-- PUB N°2 -->
-            <iframe src="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47"
-                    style="width:100%; height:120px; border:none; margin-top:10px;"></iframe>
-
+        <h3>Publicité</h3>
+        <div id="ad-box" class="ad-block">
+            <!-- La pub sera insérée ici automatiquement -->
         </div>
     </div>
 
+    <div id="game-area">
+        <canvas id="drawCanvas" width="400" height="400"></canvas>
+    </div>
 </div>
 
 <script>
-    let canvas = document.getElementById("canvas");
-    let ctx = canvas.getContext("2d");
-    let drawing = false;
-    let points = [];
-    let showGuide = false;
+let isDrawing = false;
+let ctx, canvas;
+let showGuide = false;
+let device = "pc";
 
-    function toggleMode() {
-        document.body.classList.toggle("dark");
+function startGame(choice) {
+    device = choice;
+    document.getElementById("device-screen").style.display = "none";
+    document.getElementById("game-container").style.display = "flex";
+
+    loadAd();
+}
+
+function loadAd() {
+    let adBox = document.getElementById("ad-box");
+
+    if (device === "mobile") {
+        adBox.innerHTML = `<iframe src="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d"
+                             style="width:100%;height:200px;border:none;border-radius:8px;"></iframe>`;
+    } else {
+        adBox.innerHTML = `<iframe src="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47"
+                             style="width:100%;height:250px;border:none;border-radius:8px;"></iframe>`;
     }
+}
+
+// === Jeu ===
+window.onload = () => {
+    canvas = document.getElementById("drawCanvas");
+    ctx = canvas.getContext("2d");
 
     canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mouseup", stop);
     canvas.addEventListener("mousemove", draw);
-    canvas.addEventListener("mouseup", end);
 
-    canvas.addEventListener("touchstart", (e)=>start(e.touches[0]));
-    canvas.addEventListener("touchmove", (e)=>{ draw(e.touches[0]); e.preventDefault(); });
-    canvas.addEventListener("touchend", end);
+    canvas.addEventListener("touchstart", start);
+    canvas.addEventListener("touchend", stop);
+    canvas.addEventListener("touchmove", draw);
+};
 
-    function start(e) {
-        drawing = true;
-        points = [];
-        ctx.beginPath();
+function start(e) {
+    isDrawing = true;
+    ctx.beginPath();
+    ctx.moveTo(getX(e), getY(e));
+}
+
+function stop() {
+    isDrawing = false;
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#000";
+    ctx.lineTo(getX(e), getY(e));
+    ctx.stroke();
+}
+
+function getX(e) {
+    return e.touches ? e.touches[0].clientX - canvas.offsetLeft : e.clientX - canvas.offsetLeft;
+}
+
+function getY(e) {
+    return e.touches ? e.touches[0].clientY - canvas.offsetTop : e.clientY - canvas.offsetTop;
+}
+
+function resetCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (showGuide) drawGuideCircle();
+}
+
+function toggleGuide() {
+    showGuide = !showGuide;
+    resetCanvas();
+}
+
+function drawGuideCircle() {
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(200, 200, 150, 0, Math.PI * 2);
+    ctx.stroke();
+}
+
+function evaluateCircle() {
+    let imageData = ctx.getImageData(0,0,400,400).data;
+    let total = 0, ok = 0;
+
+    for (let i = 0; i < imageData.length; i+=4) {
+        total++;
+        if (imageData[i] < 30 && imageData[i+1] < 30 && imageData[i+2] < 30) ok++;
     }
 
-    function draw(e) {
-        if (!drawing) return;
-        let rect = canvas.getBoundingClientRect();
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
+    let score = Math.round((ok / total) * 10000) / 100;
+    alert("Ton score : " + score + "%");
 
-        points.push({x, y});
-
-        ctx.lineWidth = 3;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "var(--accent)";
-        ctx.lineTo(x, y);
-        ctx.stroke();
+    let best = localStorage.getItem("bestCircleScore") || 0;
+    if (score > best) {
+        localStorage.setItem("bestCircleScore", score);
+        document.getElementById("best-score").textContent = score + "%";
     }
-
-    function end() { drawing = false; }
-
-    function clearCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (showGuide) drawGuide();
-    }
-
-    function toggleGuide() {
-        showGuide = !showGuide;
-        clearCanvas();
-    }
-
-    function drawGuide() {
-        let cx = canvas.width / 2;
-        let cy = canvas.height / 2;
-        let r = 120;
-
-        ctx.beginPath();
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 4]);
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-    }
-
-    function evaluateCircle() {
-        if (points.length < 10) {
-            document.getElementById("result").innerText = "Trace plus long !";
-            return;
-        }
-
-        let cx = canvas.width/2;
-        let cy = canvas.height/2;
-
-        let distances = points.map(p => Math.hypot(p.x - cx, p.y - cy));
-        let avg = distances.reduce((a,b)=>a+b,0) / distances.length;
-
-        let variance = distances.reduce((a,b)=>a + Math.abs(b - avg), 0) / distances.length;
-        let score = Math.max(0, 100 - variance * 1.2); // difficulté renforcée
-        score = score.toFixed(1);
-
-        document.getElementById("result").innerText = "Score : " + score + "%";
-
-        let best = localStorage.getItem("bestScore") || 0;
-        if (score > best) {
-            localStorage.setItem("bestScore", score);
-        }
-        document.getElementById("best").innerText = localStorage.getItem("bestScore") + "%";
-    }
-
-    if (localStorage.getItem("bestScore")) {
-        document.getElementById("best").innerText = localStorage.getItem("bestScore") + "%";
-    }
+}
 </script>
-
 </body>
 </html>
