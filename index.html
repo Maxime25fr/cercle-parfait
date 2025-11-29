@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cercle Parfait — jeu</title>
+  <meta name="description" content="Dessine le cercle le plus parfait possible. Jeu responsive, mobile & desktop, mode sombre/clair." />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-light">
+
+<!-- Choix initial device -->
+<div id="deviceModal" class="modal">
+  <div class="modal-card">
+    <h2>Choisis ton appareil</h2>
+    <p>Le layout et le format des publicités s'adapteront.</p>
+    <div class="modal-actions">
+      <button id="chooseMobile" class="btn">Téléphone</button>
+      <button id="chooseDesktop" class="btn primary">Ordinateur</button>
+    </div>
+  </div>
+</div>
+
+<!-- Top banner (ad) -->
+<header class="ad-banner ad-top" aria-hidden="false">
+  <!-- EffectiveGate script (top) -->
+  <script type='text/javascript' src='//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js'></script>
+</header>
+
+<!-- Main layout -->
+<main class="layout">
+  <section class="left-col">
+    <div class="app-header">
+      <h1>Cercle Parfait</h1>
+      <div class="controls">
+        <button id="startBtn" class="btn">Nouveau</button>
+        <button id="evaluateBtn" class="btn primary">Évaluer</button>
+        <button id="correctionBtn" class="btn">Correction</button>
+        <button id="clearBtn" class="btn">Effacer</button>
+        <button id="themeToggle" class="btn icon">🌓</button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" role="img" aria-label="Zone de dessin"></canvas>
+      <!-- Score HUD -->
+      <div id="scoreHud" class="score-hud" aria-live="polite">
+        <div id="scoreValue">—</div>
+        <div id="scoreDetails"></div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <p>Trace un cercle à la main puis clique sur <strong>Évaluer</strong>. Utilise <em>Correction</em> pour afficher le cercle ajusté.</p>
+    </div>
+  </section>
+
+  <aside class="right-col">
+    <div class="ad-vertical ad-sticky">
+      <!-- HighPerformanceFormat iframe ad -->
+      <div id="hpAd">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '506bbbc05cbb873bbe918c633ae6ad39',
+            'format' : 'iframe',
+            'height' : 60,
+            'width' : 468,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/506bbbc05cbb873bbe918c633ae6ad39/invoke.js"></script>
+      </div>
+    </div>
+
+    <div class="score-box">
+      <div class="score-box-header">
+        <h3>Meilleurs scores</h3>
+        <button id="exportCsv" class="btn small">Export</button>
+      </div>
+      <div class="score-list" id="scoreList" aria-live="polite">
+        <!-- scores injected here -->
+      </div>
+    </div>
+
+    <div class="ad-links">
+      <a class="ad-link" href="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d" target="_blank" rel="noopener noreferrer">▶ Découvrir d'autres jeux</a>
+      <a class="ad-link" href="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47" target="_blank" rel="noopener noreferrer">▶ Voir recommandations</a>
+    </div>
+  </aside>
+</main>
+
+<!-- Bottom banner (ad) -->
+<footer class="ad-banner ad-bottom" aria-hidden="false">
+  <!-- Optional duplicate or different effectivegate placement -->
+  <script type='text/javascript' src='//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js'></script>
+</footer>
+
+<script src="script.js" defer></script>
+</body>
+</html>
