@@ -1,60 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cercle Parfait - Jeu</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cercle Parfait — Dessine & Challenge</title>
+  <meta name="description" content="Jeu Cercle Parfait — dessine un cercle avec la souris ou le doigt, obtient un score et sauvegarde tes meilleurs essais." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="light">
-  <div id="startAnimation" class="start-animation">
-    <div class="circle-intro"></div>
+  <!-- TOP ad (discret, non intrusif) -->
+  <div class="ad-banner ad-top" aria-hidden="true">
+    <script type="text/javascript" src="//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js"></script>
   </div>
 
-  <div class="ad-banner top">
-    <script src="//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js"></script>
-  </div>
+  <main class="layout">
+    <section class="left-col">
+      <header class="app-header">
+        <div class="branding">
+          <h1 class="title">🎯 Cercle Parfait</h1>
+          <p class="subtitle">Trace le cercle le plus précis possible — gagne des points !</p>
+        </div>
 
-  <div class="container">
-    <div class="game-panel">
-      <h1>🎯 Cercle Parfait</h1>
+        <div class="controls">
+          <label class="device-choice">Mode:
+            <select id="deviceSelect" aria-label="Choisir appareil">
+              <option value="auto">Auto</option>
+              <option value="desktop">Ordinateur</option>
+              <option value="mobile">Téléphone</option>
+            </select>
+          </label>
 
-      <div class="controls">
-        <button id="start">Commencer</button>
-        <button id="evaluate">Évaluer</button>
-        <button id="toggleCorrection">Correction</button>
-        <button id="reset">Effacer</button>
-        <button id="toggleTheme">🌙 Mode Sombre/Clair</button>
+          <button id="startBtn" class="btn primary">Nouveau</button>
+          <button id="evalBtn" class="btn">Évaluer</button>
+          <button id="correctionBtn" class="btn">Correction</button>
+          <button id="saveBtn" class="btn">Sauvegarder</button>
+          <button id="clearBtn" class="btn">Effacer</button>
+          <button id="themeBtn" class="btn icon">🌙</button>
+        </div>
+      </header>
+
+      <!-- zone d'animation de démarrage -->
+      <div id="intro" class="intro">
+        <div class="intro-circle" aria-hidden="true"></div>
       </div>
 
-      <canvas id="canvas"></canvas>
+      <div class="canvas-wrap">
+        <canvas id="drawCanvas" role="img" aria-label="Zone de dessin"></canvas>
 
-      <div class="score-table">
-        <h3>📊 Meilleurs Scores</h3>
-        <table id="scoreTable">
-          <thead>
-            <tr><th>#</th><th>Score</th></tr>
-          </thead>
+        <!-- score affiché en grand, visible sans descendre -->
+        <div id="scorePanel" class="score-panel">
+          <div class="score-label">Score</div>
+          <div id="scoreValue" class="score-value">— / 100</div>
+        </div>
+      </div>
+
+      <div class="info">
+        <p>Trace un cercle (avec souris ou doigt). Clique <strong>Évaluer</strong> puis <strong>Correction</strong> si tu veux voir le cercle ajusté.</p>
+      </div>
+    </section>
+
+    <aside class="right-col">
+      <!-- top-right small ad slot -->
+      <div class="ad-slot small">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '506bbbc05cbb873bbe918c633ae6ad39',
+            'format' : 'iframe',
+            'height' : 60,
+            'width' : 468,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/506bbbc05cbb873bbe918c633ae6ad39/invoke.js"></script>
+      </div>
+
+      <!-- Best Scores table -->
+      <div class="scores-card">
+        <h3>🏆 Meilleurs scores</h3>
+        <table id="scoresTable" class="scores-table" aria-live="polite">
+          <thead><tr><th>#</th><th>Score</th><th>Date</th></tr></thead>
           <tbody></tbody>
         </table>
+        <div class="scores-actions">
+          <button id="clearScores" class="btn small">Effacer scores</button>
+        </div>
       </div>
-    </div>
 
-    <div class="sidebar">
-      <div class="ad-vertical">
-        <script src="//www.highperformanceformat.com/506bbbc05cbb873bbe918c633ae6ad39/invoke.js"></script>
+      <!-- vertical ad (non intrusive) -->
+      <div class="ad-slot vertical" aria-hidden="true">
+        <a href="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d" target="_blank" rel="noopener noreferrer">Découvrir d'autres jeux ▶</a>
       </div>
-      <div class="ad-vertical">
-        <a href="https://www.effectivegatecpm.com/z7ngguw493?key=077b9c468d6714dfe013b3ef11f4a91d" target="_blank">▶ Découvrir d'autres jeux</a>
-      </div>
-      <div class="ad-vertical">
-        <a href="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47" target="_blank">▶ Autres jeux</a>
-      </div>
-    </div>
-  </div>
 
-  <div class="ad-banner bottom">
-    <script src="//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js"></script>
+      <div class="ad-slot vertical" aria-hidden="true">
+        <a href="https://www.effectivegatecpm.com/bz0w4sqe2?key=abe85d8dd5f18c39b8827f44ef96af47" target="_blank" rel="noopener noreferrer">Autres jeux ▶</a>
+      </div>
+    </aside>
+  </main>
+
+  <!-- BOTTOM ad (discret) -->
+  <div class="ad-banner ad-bottom" aria-hidden="true">
+    <script type="text/javascript" src="//pl28147943.effectivegatecpm.com/30/c1/d4/30c1d4e16ee93c6022a4658e04bebe19.js"></script>
   </div>
 
   <script src="script.js"></script>
