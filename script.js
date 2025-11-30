@@ -1,5 +1,7 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
 
 let drawing = false;
 let points = [];
@@ -7,126 +9,35 @@ let showCorrection = false;
 let theme = 'light';
 let scores = JSON.parse(localStorage.getItem("circleScores") || "[]");
 
-// Fix : bon scale + bon offset
-function resizeCanvas() {
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+function getPos(e){ const r = canvas.getBoundingClientRect(); return e.touches ? {x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top}:{x:e.clientX-r.left,y:e.clientY-r.top}; }
 
-// Sélection automatique couleur trait
-function updateStrokeColor() {
-  ctx.strokeStyle = theme === "light" ? "#000000" : "#ffffff";
-}
-updateStrokeColor();
+function startDraw(e){ drawing=true; points=[]; const p=getPos(e); points.push(p); }
+function endDraw(){ drawing=false; }
 
-// Gestion souris/tactile
-function getPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
-    y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
-  };
-}
+function draw(e){ if(!drawing) return; e.preventDefault(); const p=getPos(e); points.push(p); const a=points[points.length-2], b=p; ctx.lineWidth=3; ctx.strokeStyle = theme==='light'?"black":"white"; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
 
-canvas.addEventListener('mousedown', () => { drawing = true; points = []; });
-canvas.addEventListener('mouseup', () => drawing = false);
-canvas.addEventListener('mousemove', drawStroke);
-canvas.addEventListener('touchstart', () => { drawing = true; points = []; });
-canvas.addEventListener('touchend', () => drawing = false);
-canvas.addEventListener('touchmove', drawStroke);
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('touchstart', startDraw);
+canvas.addEventListener('touchend', endDraw);
+canvas.addEventListener('touchmove', draw);
 
-function drawStroke(e) {
-  if (!drawing) return;
-  e.preventDefault();
-  const {x, y} = getPos(e);
-  points.push({x, y});
-  if (points.length > 1) {
-    const p1 = points[points.length-2];
-    const p2 = points[points.length-1];
-    ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.stroke();
-  }
-}
+document.getElementById("start").onclick = ()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); points=[]; };
+document.getElementById("reset").onclick = ()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); points=[]; };
 
-document.getElementById("start").onclick = () => { ctx.clearRect(0,0,canvas.width,canvas.height); points=[]; }
-document.getElementById("reset").onclick = () => { ctx.clearRect(0,0,canvas.width,canvas.height); points=[]; }
-document.getElementById("toggleCorrection").onclick = () => {
-  showCorrection = !showCorrection;
-  showCorrection ? drawCorrection() : redrawStroke();
-};
-document.getElementById("toggleTheme").onclick = () => {
-  theme = theme === "light" ? "dark" : "light";
-  document.body.className = theme;
-  updateStrokeColor();
-};
+document.getElementById("toggleTheme").onclick = ()=>{ theme=theme==='light'?'dark':'light'; document.body.className=theme; };
 
-// Évaluation similaire (juste les valeurs)
-document.getElementById("evaluate").onclick = () => {
-  if (points.length < 10) { alert("Trace un cercle plus complet."); return; }
+document.getElementById("toggleCorrection").onclick = ()=>{ showCorrection=!showCorrection; if(showCorrection) drawCorrection(); else redrawStroke(); };
 
-  let xs = points.map(p=>p.x);
-  let ys = points.map(p=>p.y);
-  let cx = xs.reduce((a,b)=>a+b)/xs.length;
-  let cy = ys.reduce((a,b)=>a+b)/ys.length;
-  let rs = points.map(p=>Math.hypot(p.x-cx, p.y-cy));
-  let r = rs.reduce((a,b)=>a+b)/rs.length;
-  let variance = rs.reduce((a,b)=>a+Math.abs(b-r),0)/rs.length;
+function redrawStroke(){ ctx.clearRect(0,0,canvas.width,canvas.height); for(let i=1;i<points.length;i++){ ctx.beginPath(); ctx.moveTo(points[i-1].x,points[i-1].y); ctx.lineTo(points[i].x,points[i].y); ctx.strokeStyle=theme==='light'?"black":"white"; ctx.lineWidth=3; ctx.stroke(); }}
 
-  let score = Math.max(0, 100 - variance * 5);
-  score = Math.round(score);
+function drawCorrection(){ if(points.length<5) return; redrawStroke(); const xs=points.map(p=>p.x), ys=points.map(p=>p.y); const cx=xs.reduce((a,b)=>a+b)/xs.length, cy=ys.reduce((a,b)=>a+b)/ys.length; const rs=points.map(p=>Math.hypot(p.x-cx,p.y-cy)); const r=rs.reduce((a,b)=>a+b)/rs.length; ctx.strokeStyle="red"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke(); }
 
-  alert("Ton score : "+score+"/100");
+// Nouveau calcul PRO précis
+function evaluateScore(){ if(points.length<10){ alert("Trace un cercle complet."); return; } const xs=points.map(p=>p.x), ys=points.map(p=>p.y); const cx=xs.reduce((a,b)=>a+b)/xs.length, cy=ys.reduce((a,b)=>a+b)/ys.length; const rs=points.map(p=>Math.hypot(p.x-cx,p.y-cy)); const r=rs.reduce((a,b)=>a+b)/rs.length; const variance = rs.reduce((a,b)=>a+Math.abs(b-r),0)/rs.length; let score = Math.max(0,100 - variance*4.2); score=Math.round(score); alert("Score : "+score+"/100"); scores.push(score); scores.sort((a,b)=>b-a); if(scores.length>5) scores=scores.slice(0,5); localStorage.setItem("circleScores",JSON.stringify(scores)); updateScoreTable(); }
 
-  scores.push(score);
-  scores.sort((a,b)=>b-a);
-  if (scores.length>5) scores.length = 5;
-  localStorage.setItem("circleScores", JSON.stringify(scores));
-  updateScoreTable();
-};
+document.getElementById("evaluate").onclick = evaluateScore;
 
-function drawCorrection() {
-  if (points.length < 3) return;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  redrawStroke();
-
-  let xs = points.map(p=>p.x);
-  let ys = points.map(p=>p.y);
-  let cx = xs.reduce((a,b)=>a+b)/xs.length;
-  let cy = ys.reduce((a,b)=>a+b)/ys.length;
-  let rs = points.map(p=>Math.hypot(p.x-cx, p.y-cy));
-  let r = rs.reduce((a,b)=>a+b)/rs.length;
-
-  ctx.strokeStyle="red";
-  ctx.beginPath();
-  ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.stroke();
-
-  updateStrokeColor();
-}
-
-function redrawStroke() {
-  updateStrokeColor();
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  for (let i = 1; i < points.length; i++) {
-    ctx.beginPath();
-    ctx.moveTo(points[i-1].x, points[i-1].y);
-    ctx.lineTo(points[i].x, points[i].y);
-    ctx.stroke();
-  }
-}
-
-function updateScoreTable() {
-  const tbody = document.querySelector("#scoreTable tbody");
-  tbody.innerHTML = "";
-  scores.forEach((s,i)=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${i+1}</td><td>${s}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
+function updateScoreTable(){ const tbody=document.querySelector('#scoreTable tbody'); tbody.innerHTML=""; scores.forEach((s,i)=>{ const tr=document.createElement("tr"); tr.innerHTML=`<td>${i+1}</td><td>${s}</td>`; tbody.appendChild(tr); }); }
 updateScoreTable();
